@@ -1,6 +1,6 @@
 `timescale 1us/100ns
 
-module mux_4to1(
+module mux_32to1(
 	input [31:0] in0, in1, in2, in3, in4, in5, in6, in7, in8,		
 	input [31:0] in9, in10, in11, in12, in13, in14, in15, in16,
 	input [31:0] in17, in18, in19, in20, in21, in22, in23, in24,
