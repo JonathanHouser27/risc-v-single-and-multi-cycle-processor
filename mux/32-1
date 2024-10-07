@@ -10,7 +10,6 @@ module mux_4to1(
 );
 
 	// use ternary operators, because that is easiest
-	// if sel == 0 set Y = A else set Y = B
 	assign Y = (sel == 5'b00000) ? in0 :
 		(sel == 5'b00001) ? in1 :
 		(sel == 5'b00010) ? in2 :
