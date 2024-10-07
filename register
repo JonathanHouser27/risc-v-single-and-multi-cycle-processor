@@ -16,8 +16,7 @@ module register(
 	// Input selection logic for sign/zero extension
 	assign d_input = 	(we) ?
 				(sign_extend ? {{16{in[15]}}, in[15:0]} :
-				(zero_extend ? {16'b0, in[15:0]} : in)) :
-				dff;
+				(zero_extend ? {16'b0, in[15:0]} : in)) : dff;
 
 	// D-flip flops instantiation
 	dflop flop0 (.q(dff[0]), .d(d_input[0]), .clk(clk), .rst(rst));
@@ -52,12 +51,8 @@ module register(
 	dflop flop29(.q(dff[29]), .d(d_input[29]), .clk(clk), .rst(rst));
 	dflop flop30(.q(dff[30]), .d(d_input[30]), .clk(clk), .rst(rst));
 	dflop flop31(.q(dff[31]), .d(d_input[31]), .clk(clk), .rst(rst));
-	// Input selection based on control signals
-	// Generate input to the D-flip flops based on sign and zero extension
-	assign d_input = (we) ? in : dff;
-
 
 	// Output assignment
-	assign out = dff; // Modify as needed to select the desired output
+	assign out = dff; 
 
 endmodule
