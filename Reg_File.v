@@ -83,4 +83,12 @@ wire [31:0] reg_out30, reg_out31;
         .out(read_data2)   // Output is connected to read_data2
     );
 
+    // sign and zero extenstion logic
+    assign read_data1 = sign_extend ? {{16{read_data1[15]}}, read_data1[15:0]} : // sign extendsion
+ 			zero_extend ? {16'b0, read_data1[15:0]} : // zero extenstion
+			read_data1; // no extension
+    assign read_data2 = sign_extend ? {{16{read_data2[15]}}, read_data2[15:0]} : // sign extendsion
+ 			zero_extend ? {16'b0, read_data2[15:0]} : // zero extenstion
+			read_data2; // no extension
+
 endmodule
