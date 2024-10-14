@@ -22,7 +22,7 @@ module reg_file(
 
     
     // Instantiate each register explicitly
-	register reg0 (.in(data_in), .we(we && (Rd == 5'b00000)), .clk(clk), .rst(rst), .sign_extend(sign_extend), .zero_extend(zero_extend), .out(32'b0));
+	register reg0 (.in(32'b0), .we(1'b0), .clk(clk), .rst(rst), .sign_extend(sign_extend), .zero_extend(zero_extend), .out(32'b0));
 	register reg1 (.in(data_in), .we(we && (Rd == 5'b00001)), .clk(clk), .rst(rst), .sign_extend(sign_extend), .zero_extend(zero_extend), .out(reg_out[1]));
 	register reg2 (.in(data_in), .we(we && (Rd == 5'b00010)), .clk(clk), .rst(rst), .sign_extend(sign_extend), .zero_extend(zero_extend), .out(reg_out[2]));
 	register reg3 (.in(data_in), .we(we && (Rd == 5'b00011)), .clk(clk), .rst(rst), .sign_extend(sign_extend), .zero_extend(zero_extend), .out(reg_out[3]));
