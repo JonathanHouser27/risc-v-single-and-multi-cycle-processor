@@ -25,6 +25,7 @@ assign out = (func == 3'b000) ? add_result :    // ADD
              (func == 3'b011) ? A | B :         // OR
              (func == 3'b100) ? A ^ B :         // XOR
              (func == 3'b101) ? ~A :            // NOT
+	     (func == 3'b110) ? A >> 1:		// Shift right 1	
              32'b0;                             // Default
 
 assign c_out = (func == 3'b000) ? add_c_out :   // Carry out for ADD
