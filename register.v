@@ -1,22 +1,14 @@
 `timescale 1us/100ns
 
 module register(
-	input [31:0] in,          // Input data	
+	input [31:0] d_input,    // Input data	
 	input we,                // Write enable
  	input clk,               // Clock signal
 	input rst,               // Reset signal
-	input sign_extend,       // Sign extension control
-	input zero_extend,       // Zero extension control
 	output [31:0] out        // Output data
 );
 
-	wire [31:0] dff; // D-flip flop outputs
-	wire [31:0] d_input;    // Input to D-flip flops
-
-	// Input selection logic for sign/zero extension
-	assign d_input = 	(we) ?
-				(sign_extend ? {{16{in[15]}}, in[15:0]} :
-				(zero_extend ? {16'b0, in[15:0]} : in)) : dff;
+	wire [31:0] dff; 	// D-flip flop outputs
 
 	// D-flip flops instantiation
 	dflop flop0 (.q(dff[0]), .d(d_input[0]), .clk(clk), .rst(rst));
