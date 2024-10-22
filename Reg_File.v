@@ -1,16 +1,13 @@
 module reg_file(
-    input [31:0] data_in,       // Data input for registers
-    input [4:0] Rs1,            // Read register 1 address
-    input [4:0] Rs2,            // Read register 2 address
-    input [4:0] Rd,             // Write register address
-    input we,                   // Write enable
-    input clk,                  // Clock signal
-    input rst,                  // Reset signal
-    input sign_extend,          // Sign extension control
-    input zero_extend,          // Zero extension control
-    input [1:0] alu_src,	// control signal for 3:1 mux to ALU
-    output [31:0] read_data1,   // Data output for register 1
-    output [31:0] read_data2    // Data output for register 2
+        input [31:0] data_in,       // Data input for registers
+        input [4:0] Rs1,            // Read register 1 address
+        input [4:0] Rs2,            // Read register 2 address
+        input [4:0] Rd,             // Write register address
+        input we,                   // Write enable
+        input clk,                  // Clock signal
+        input rst,                  // Reset signal
+        output [31:0] read_data1,   // Data output for register 1
+        output [31:0] read_data2    // Data output for register 2
 );
 
     // Output wires for each register
@@ -20,7 +17,6 @@ wire [31:0] reg_out12, reg_out13, reg_out14, reg_out15, reg_out16, reg_out17;
 wire [31:0] reg_out18, reg_out19, reg_out20, reg_out21, reg_out22, reg_out23;
 wire [31:0] reg_out24, reg_out25, reg_out26, reg_out27, reg_out28, reg_out29;
 wire [31:0] reg_out30, reg_out31;
-wire [31:0] sext_data, zext_data;
     
     // Instantiate each register explicitly
 	register reg0 (.d_input(32'b0), .we(1'b0), .clk(clk), .rst(rst), .out(reg_out0));
@@ -84,19 +80,5 @@ wire [31:0] sext_data, zext_data;
         .Y(read_data2)   // Output is connected to read_data2
     );
 
-
-    // sign and zero extenstion logic
-    assign sext_data = {{16{read_data2[15]}}, read_data2[15:0]}; // sign_extend
-    assign zext_data = {16'b0, read_data2[15:0]}; 		 // zero_extend
-
-    // mux for the read_data2, sext, and zext
-    mux_4to1 mux_alu(
-	.sel(alu_src),		// control signal
-	.in1(read_data2),	// normal read_data2 value
-	.in2(sext_data),	// sext value
-	.in3(zext_data),	// zext value
-	.in4(32'b0),
-	.Y(read_data2)		// Output to ALU
-    );
 
 endmodule
