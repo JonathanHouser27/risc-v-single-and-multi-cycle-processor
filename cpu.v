@@ -1,82 +1,108 @@
 `timescale 1us/100ns
 
 module cpu(
-	input wire clk,
-	input wire rst
-
+    input wire clk,
+    input wire rst
 );
 
 // Internal signals
-wire [31:0] next_pc;            // Next Program Counter value
-wire [31:0] inst_encoding;      // Instruction from IMEM
-wire [31:0] rf_out_0;           // Output from Register File (RF) - Source Register 1
-wire [31:0] rf_out_1;           // Output from Register File (RF) - Source Register 2
-wire next_pc_sel;               // Selection signal for next PC value
-wire [31:0] pc_plus_4;          // Incremented PC value
-wire [31:0] alu_in_2;		// alu input from 3:1 mux
-wire [31:0] alu_out;		// output from alu
+wire [31:0] current_pc;
+wire [31:0] inst_encoding;
+wire [31:0] rf_out_0;
+wire [31:0] rf_out_1;
+wire [31:0] next_pc;
+wire [31:0] pc_plus_4;
+wire [31:0] alu_out;
+wire [31:0] dmem_out;
+wire alu_c_out;
 
-  // Program Counter instantiation
+// from decode
+wire reg_write;
+wire [1:0] alu_src;
+wire [3:0] alu_op;
+wire dmem_write;
+wire dmem_read;
+wire [4:0] Rs1;
+wire [4:0] Rs2;
+wire [4:0] Rd;
+wire branch_enable;
+wire [31:0] imm;
+
+// Calculate PC + 4
+assign pc_plus_4 = current_pc + 4;
+
+// Program Counter instantiation
 Program_Counter pc_module(
-	.clk(clk),
-	.rst(rst),
-	.branch_addy(next_pc),
-	.branch_enable(1'b0),
-	.PC_out(next_pc)               // Output: Current PC value
+    .clk(clk),
+    .rst(rst),
+    .branch_addy(alu_out),  // Use ALU output for branch address
+    .branch_enable(branch_enable),
+    .PC_out(current_pc)
 );
 
-
-  // Instruction Memory instantiation
+// Instruction Memory instantiation
 memory2c imem(
-	.data_out(inst_encoding),  // Output: Instruction
-	.data_in(32'b0),           // No data input for instruction fetch
-	.addr(pc),                 // Address: Current PC value
-	.enable(1'b1),             // Enable memory read
-	.wr(1'b0),                 // No write operation
-	.createdump(1'b0),         // No dump creation
-	.clk(clk),
-	.rst(rst)
+    .data_out(inst_encoding),
+    .data_in(32'b0),
+    .addr(current_pc),
+    .enable(1'b1),
+    .wr(1'b0),
+    .createdump(1'b0),
+    .clk(clk),
+    .rst(rst)
 );
 
-  
+// decoder instantiation
+decode decode(
+    .instruction(inst_encoding),
+    .clk(clk),
+    .rst(rst),
+    .Rs1(Rs1),
+    .Rs2(Rs2),
+    .Rd(Rd),
+    .alu_op(alu_op),
+    .imm(imm),  // Single immediate output
+    .alu_src(alu_src),
+    .write_enable(reg_write),
+    .mem_read(dmem_read),
+    .mem_write(dmem_write),
+    .branch(branch_enable)
+);
 
-  // Register File instantiation
+// Register File instantiation
 reg_file rf(
-	.Rs1(inst_encoding[19:15]),  	// Source register 1 address (decode)
-	.Rs2(inst_encoding[24:20]),  	// Source register 2 address (decode)
-	.Rd(inst_encoding[11:7]),	// Destination register address (decode)
-	.data_in(32'b0),            	// Data to write (defaulting to zero for now)
-	.we(1'b0),                 	// Write enable (defaulting to zero for now)
-	.read_data1(rf_out_0),        	// Output: Source register 1 data
-	.read_data2(rf_out_1),         	// Output: Source register 2 data
-	.alu_src(2'b0),
-	.sign_extend(1'b0),
-	.zero_extend(1'b0),
-	.clk(clk),
-	.rst(rst)
+    .Rs1(Rs1),
+    .Rs2(Rs2),
+    .Rd(Rd),
+    .data_in(dmem_read ? dmem_out : alu_out),  // Select between memory and ALU output
+    .we(reg_write),
+    .read_data1(rf_out_0),
+    .read_data2(rf_out_1),
+    .clk(clk),
+    .rst(rst)
 );
 
+// ALU instantiation
 ALU alu(
-	.A(read_data1),               // First operand
-	.B(alu_in_2),     	      // Second operand
-	.func(data_out),              // Function select
-	.out(alu_out)	              // ALU output
-	//output c_out                // Carry out, don't need?
+    .A(rf_out_0),
+    .B(rf_out_1),
+    .imm(imm),
+    .alu_src(alu_src),
+    .func(alu_op),
+    .out(alu_out),
+    .c_out(alu_c_out)
 );
 
-// DMEM
+// DMEM instantiation
 memory2c dmem(
-	.data_out(inst_encoding),  // Output: Instruction
-	.data_in(alu_out),         // No data input for instruction fetch
-	.addr(pc),                 // Address: Current PC value
-	.enable(1'b1),             // Enable memory read
-	.wr(1'b0),                 // No write operation
-	.createdump(1'b0),         // No dump creation
-	.clk(clk),
-	.rst(rst)
+    .data_out(dmem_out),
+    .data_in(rf_out_1),  // Store data from register
+    .addr(alu_out),      // Use ALU output as address
+    .enable(dmem_read | dmem_write),  // Enable on read or write
+    .wr(dmem_write),
+    .createdump(1'b0),
+    .clk(clk),
+    .rst(rst)
 );
-
-// Next PC selection logic
-assign next_pc = (next_pc_sel == 1'b1) ? /* Placeholder for branch or jump target */ 32'b0 : pc_plus_4;
 
 endmodule
