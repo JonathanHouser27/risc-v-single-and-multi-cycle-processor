@@ -17,6 +17,7 @@ wire [31:0] reg_out12, reg_out13, reg_out14, reg_out15, reg_out16, reg_out17;
 wire [31:0] reg_out18, reg_out19, reg_out20, reg_out21, reg_out22, reg_out23;
 wire [31:0] reg_out24, reg_out25, reg_out26, reg_out27, reg_out28, reg_out29;
 wire [31:0] reg_out30, reg_out31;
+wire [31:0] read_data_out_1, read_data_out_2;
     
     // Instantiate each register explicitly
 	register reg0 (.d_input(32'b0), .we(1'b0), .clk(clk), .rst(rst), .out(reg_out0));
@@ -63,7 +64,7 @@ wire [31:0] reg_out30, reg_out31;
         .in20(reg_out20), .in21(reg_out21), .in22(reg_out22), .in23(reg_out23),
         .in24(reg_out24), .in25(reg_out25), .in26(reg_out26), .in27(reg_out27),
         .in28(reg_out28), .in29(reg_out29), .in30(reg_out30), .in31(reg_out31),
-        .Y(read_data1)   // Output is connected to read_data1
+        .Y(read_data_out_1)   // Output is connected to read_data1
     );
 
     // Instantiate 32:1 mux for read_data2 (using Rs2 to select)
@@ -77,8 +78,10 @@ wire [31:0] reg_out30, reg_out31;
         .in20(reg_out20), .in21(reg_out21), .in22(reg_out22), .in23(reg_out23),
         .in24(reg_out24), .in25(reg_out25), .in26(reg_out26), .in27(reg_out27),
         .in28(reg_out28), .in29(reg_out29), .in30(reg_out30), .in31(reg_out31),
-        .Y(read_data2)   // Output is connected to read_data2
+        .Y(read_data_out_2)   // Output is connected to read_data2
     );
 
+assign read_data1 = read_data_out_1;
+assign read_data2 = read_data_out_2;
 
 endmodule
