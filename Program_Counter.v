@@ -1,30 +1,25 @@
 `timescale 1us/100ns
 
 module Program_Counter(
-	input clk, rst,			// clock and reset signals
-	input [31:0] branch_addy,	// address to jump to on a branch
-	input branch_enable,		// branch enable signal
-	output [31:0] PC_out
+    input clk,
+    input rst,                // Reset signal
+    input [31:0] branch_addy, // Address to jump to on a branch
+    input branch_enable,      // Branch enable signal
+    output [31:0] PC_out      // PC output as a wire
 );
 
-wire[31:0] pc_next;
-wire[31:0] pc_plus4;
+wire [31:0] next_PC;          // Next value of the program counter
 
-// PC + 4 logic
-assign pc_plus4 = PC_out + 32'd4; // increment pc by 4
+assign next_PC = (rst) ? 32'b0 :		// Reset
+		 (branch_enable) ? branch_addy:	// Branch
+		 (PC_out + 32'd4);		// plus 4
 
-
-// 2:1 MUX to select between PC+4 and a branch address
-assign pc_next = (branch_enable) ? branch_addy : pc_plus4;
-
-// dflop register
 register pc_register (
-	.clk(clk),
-	.rst(rst),
-	.d_input(pc_next),
-	.we(1'b1),
-	.out(PC_out)
+    .clk(clk),
+    .rst(rst),
+    .we(1'b1),
+    .d_input(next_PC),
+    .out(PC_out)
 );
-
 
 endmodule
