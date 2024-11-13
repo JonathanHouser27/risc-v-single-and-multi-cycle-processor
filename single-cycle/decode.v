@@ -10,6 +10,7 @@
 `define ALU_OR     4'b0110 // Bitwise OR
 `define ALU_AND    4'b0111 // Bitwise AND
 `define ALU_BRANCH 4'b1000 // Branch
+`define ALU_SUB    4'b1001 // Subtraction
 
 // Instruction Opcode Definitions
 `define OPCODE_R_TYPE  7'b0110011 // R-Type
@@ -40,6 +41,7 @@ module decode (
 // Instruction fields
 wire [6:0] opcode = instruction[6:0];
 wire [2:0] funct3 = instruction[14:12];  
+wire [6:0] funct7 = instruction[31:25];  // Extract funct7 for R-Type instructions
 
 // Control wires
 reg [3:0] alu_op_wire;    
@@ -48,6 +50,9 @@ reg [1:0] alu_src_wire;
 reg [31:0] imm_wire;
 reg [31:0] branch_wire;
 reg [1:0] rf_input = 2'b11;
+
+// Register addresses (default values)
+reg [4:0] Rs1_out_reg, Rs2_out_reg, Rd_out_reg;
 
 // Combinational logic for decoding
 always @* begin
@@ -60,17 +65,30 @@ always @* begin
     branch_wire = 32'b0;
     imm_wire = 32'b0;
     branch_enable_wire = 1'b0;
+
+    // Default register outputs
+    Rs1_out_reg = instruction[19:15]; // Default Rs1
+    Rs2_out_reg = instruction[24:20]; // Default Rs2
+    Rd_out_reg = instruction[11:7];   // Default Rd
     
+    // Default control inputs
+    rf_input = 2'b11;
 
     case (opcode)
         `OPCODE_R_TYPE: begin
             case (funct3)
-                3'b000: alu_op_wire = `ALU_ADD;  // R-Type ADD
+                3'b000: begin
+                    if (funct7 == 7'b0100000) // Check funct7 for 'sub'
+                        alu_op_wire = `ALU_SUB;  // R-Type SUB
+                    else
+                        alu_op_wire = `ALU_ADD;  // R-Type ADD
+                end
                 3'b111: alu_op_wire = `ALU_AND;  // R-Type AND
                 default: alu_op_wire = 4'b1111;  // Undefined R-Type operation
             endcase
             write_enable_wire = 1;
             alu_src_wire = 2'b00;
+            // Rs1, Rs2, and Rd are already assigned above
         end
 
         `OPCODE_I_TYPE: begin
@@ -79,18 +97,22 @@ always @* begin
                 3'b110: alu_op_wire = `ALU_OR;   // I-Type ORI
                 default: alu_op_wire = `ALU_LOAD; // Default I-Type as LOAD
             endcase
-	    rf_input = 2'b10;
+            rf_input = 2'b10;
             write_enable_wire = 1;
             alu_src_wire = 2'b10;
-            mem_read_wire = 1;
+            mem_read_wire = 0;
             imm_wire = {{20{instruction[31]}}, instruction[31:20]};  // I-type immediate
+            // Rs1, Rs2, and Rd are already assigned above
         end
 
         `OPCODE_S_TYPE: begin
             alu_op_wire = `ALU_STORE;   // S-Type STORE
             alu_src_wire = 2'b10;
-            mem_write_wire = 1;
+            mem_write_wire = 1'b1;
             imm_wire = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};  // S-type immediate
+            // Rs1, Rs2, and Rd are not needed for S-Type, but Rs1 will be used
+            Rs1_out_reg = instruction[19:15]; // Rs1 is used in Store
+            Rs2_out_reg = instruction[24:20]; // Rs2 is used in Store
         end
 
         `OPCODE_B_TYPE: begin
@@ -99,14 +121,22 @@ always @* begin
             branch_enable_wire = 1'b1;
             imm_wire = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0}; // B-type immediate
             branch_wire = imm_wire;
+            // Rs1 and Rs2 are needed for comparison in branching
+            Rs1_out_reg = instruction[19:15];
+            Rs2_out_reg = instruction[24:20];
+            Rd_out_reg = 5'b00000; // Branch does not use Rd
         end
 
         `OPCODE_U_TYPE: begin
             alu_op_wire = `ALU_LUI;     // U-Type LUI
             alu_src_wire = 2'b01;
-	    rf_input = 2'b01;
+            rf_input = 2'b01;
             write_enable_wire = 1;
             imm_wire = {instruction[31:12], 12'b0}; // U-type immediate
+            // Rs1, Rs2, and Rd are not used in LUI (Rd is written to)
+            Rs1_out_reg = 5'b00000; // LUI does not use Rs1
+            Rs2_out_reg = 5'b00000; // LUI does not use Rs2
+            Rd_out_reg = instruction[11:7]; // Rd is written to in LUI
         end
 
         `OPCODE_J_TYPE: begin
@@ -116,8 +146,18 @@ always @* begin
             branch_enable_wire = 1'b1;
             imm_wire = {{11{instruction[31]}}, instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0}; // J-type immediate
             branch_wire = imm_wire;
+            // Rs1, Rs2, and Rd are not used in JUMP
+            Rs1_out_reg = 5'b00000; // JUMP does not use Rs1
+            Rs2_out_reg = 5'b00000; // JUMP does not use Rs2
+            Rd_out_reg = instruction[11:7]; // Rd is written to in JUMP
         end
 
+        default: begin
+            // In case the opcode doesn't match any of the known types
+            Rs1_out_reg = 5'b00000; // Default value for Rs1
+            Rs2_out_reg = 5'b00000; // Default value for Rs2
+            Rd_out_reg = 5'b00000;  // Default value for Rd
+        end
     endcase
 end
 
@@ -133,8 +173,8 @@ assign branch_enable = branch_enable_wire;
 assign rf_input_src = rf_input;
 
 // Register addresses
-assign Rs1_out = instruction[19:15]; 
-assign Rs2_out = instruction[24:20]; 
-assign Rd_out = instruction[11:7];    
+assign Rs1_out = Rs1_out_reg;
+assign Rs2_out = Rs2_out_reg;
+assign Rd_out = Rd_out_reg;
 
 endmodule
