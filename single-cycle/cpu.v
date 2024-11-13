@@ -29,85 +29,89 @@ wire [4:0] Rs2;
 wire [4:0] Rd;
 wire branch_enable;
 wire [31:0] imm;
-
+wire [1:0] rf_select_in;
+wire [31:0] imm_ext;         // Extended Immediate value
+wire [31:0] rf_in;
 
 // Program Counter instantiation
 Program_Counter pc_module(
-    .clk(clk),				// Input
-    .rst(rst),				// Input
-    .branch_addy(branch_target),	// Input
-    .branch_enable(branch_taken),	// Input
-    .PC_out(current_pc)			// Output
+    .clk(clk),                         // Input
+    .rst(rst),                         // Input
+    .branch_addy(branch_target),       // Input
+    .branch_enable(branch_taken),      // Input
+    .return_addr(current_pc + 4),      // Link address to save in Ra
+    .PC_out(current_pc)                // Output
 );
 
 // Instruction Memory instantiation
 memory2c imem(
-    .data_out(inst_encoding),		// Output
-    .data_in(32'b0),			// Input
-    .addr(current_pc),			// Input
-    .enable(1'b1),			// Input
-    .wr(1'b0),				// Input
-    .createdump(1'b0),			// Input
-    .clk(clk),				// Input
-    .rst(rst)				// Input
+    .data_out(inst_encoding),          // Output
+    .data_in(32'b0),                   // Input (unused for read)
+    .addr(current_pc),                 // Input (PC address)
+    .enable(1'b1),                     // Input (enable memory access)
+    .wr(1'b0),                         // Input (write disable for instruction memory)
+    .createdump(1'b0),                 // Input (disable memory dump)
+    .clk(clk),                         // Input (clock)
+    .rst(rst)                          // Input (reset)
 );
 
-// decoder instantiation
+// Decoder instantiation
 decode decode(
-    .instruction(inst_encoding),	// Input
-    .Rs1_out(Rs1),			// Output
-    .Rs2_out(Rs2),			// Output
-    .Rd_out(Rd),			// Output
-    .clk(clk),				// Input
-    .rst(rst),				// Input
-    .alu_op(alu_op),			// Output
-    .imm(imm),  			// Output
-    .alu_src(alu_src),			// Output
-    .we(reg_write),			// Output
-    .mem_read(dmem_read),		// Output
-    .mem_write(dmem_write),		// Output
-    .branch_target(branch_target),	// Output
-    .branch_enable(branch_enable)	// Output
+    .clk(clk),
+    .rst(rst),
+    .instruction(inst_encoding),
+    .rf_input_src(rf_select_in),
+    .alu_op(alu_op),
+    .we(reg_write),
+    .mem_read(dmem_read),
+    .mem_write(dmem_write),
+    .branch_target(branch_target),
+    .branch_enable(branch_enable),
+    .imm(imm),
+    .alu_src(alu_src),
+    .Rs1_out(Rs1),    
+    .Rs2_out(Rs2),
+    .Rd_out(Rd)
 );
-
 
 // Register File instantiation
 reg_file rf(
-    .Rs1(Rs1),				// Input
-    .Rs2(Rs2),				// Input
-    .Rd(Rd),				// Input
-    .data_in(rf_data_in),		// Input
-    .we(reg_write),			// Input
-    .read_data1(rf_out_0),		// Output
-    .read_data2(rf_out_1),		// Output
-    .clk(clk),				// Input
-    .rst(rst)				// Input
+    .Rs1(Rs1),                         // Input
+    .Rs2(Rs2),                         // Input
+    .Rd(Rd),                           // Input
+    .data_in(rf_in),                   // Input
+    .we(reg_write),                    // Input (write enable)
+    .read_data1(rf_out_0),             // Output (data from Rs1)
+    .read_data2(rf_out_1),             // Output (data from Rs2)
+    .clk(clk),                         // Input (clock)
+    .rst(rst)                          // Input (reset)
 );
 
 // ALU instantiation
 ALU alu(
-    .A(rf_out_0),			// Input
-    .B(rf_out_1),			// Input
-    .imm(imm),				// Input
-    .alu_src(alu_src),			// Input
-    .func(alu_op),			// Input
-    .out(alu_out),			// Output
-    .c_out(alu_c_out),			// Output
-    .branch_taken(branch_taken)		// Output
+    .A(rf_out_0),                      // Input (from Rs1)
+    .B(rf_out_1),                      // Input (from Rs2)
+    .imm(imm),                          // Input (immediate value)
+    .alu_src(alu_src),                  // Input (ALU source selection)
+    .func(alu_op),                      // Input (ALU operation code)
+    .out(alu_out),                      // Output (ALU result)
+    .c_out(alu_c_out),                  // Output (carry-out flag)
+    .branch_taken(branch_taken)        // Output (branch taken flag)
 );
 
-// DMEM instantiation
+// Data Memory instantiation
 memory2c dmem(
-    .data_out(dmem_out),		// Output
-    .data_in(alu_out),  		// Input
-    .addr(alu_out), 			// Input   
-    .enable(dmem_read),  		// Input
-    .wr(dmem_write),			// Input
-    .createdump(1'b0),			// Input
-    .clk(clk),				// Input
-    .rst(rst)				// Input
+    .data_out(dmem_out),                // Output (data from memory)
+    .data_in(alu_out),                  // Input (data to memory)
+    .addr(alu_out),                     // Input (address to memory)
+    .enable(dmem_read),                 // Input (memory read enable)
+    .wr(dmem_write),                    // Input (memory write enable)
+    .createdump(1'b0),                  // Input (disable memory dump)
+    .clk(clk),                          // Input (clock)
+    .rst(rst)                           // Input (reset)
 );
 
-assign rf_data_in = dmem_read ? dmem_out : alu_out;
+// Output selection based on memory read or ALU result
+assign rf_in = (dmem_read) ? dmem_out : alu_out;
 
 endmodule
