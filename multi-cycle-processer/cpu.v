@@ -5,118 +5,149 @@ module cpu (
     input wire rst
 );
 
+    // Signals
+    wire [31:0] current_pc;
+    wire [31:0] inst_encoding;
+    wire [31:0] rf_out_1;
+    wire [31:0] rf_out_2;
+    wire [31:0] alu_out;
+    wire [31:0] dmem_out;
+    wire [31:0] branch_target;
+    wire [31:0] rf_in_latch;
+    wire branch_taken;
+    wire [31:0] XM_alu_out;
+    wire [31:0] XM_imm_out;
+    wire [31:0] XM_mem_write_data;
+    wire XM_rf_write_enable;
+    wire XM_mem_write_enable;
+    wire XM_mem_read_enable;
+    wire [1:0] XM_rf_mux_control;
+    wire [4:0] Rd_WB;
+    wire reg_write;
+    wire dmem_write;
+    wire mem_read;
+    wire [4:0] alu_op;
+    wire [4:0] Rs1;
+    wire [4:0] Rs2;
+    wire [4:0] Rd;
+    wire [31:0] imm;
+    wire [1:0] rf_select_in;
 
-// Internal signals
-wire [31:0] current_pc;
-wire [31:0] inst_encoding;
-wire [31:0] rf_out_0;
-wire [31:0] rf_out_1;
-wire [31:0] alu_out;
-wire [31:0] dmem_out;
-wire [31:0] branch_target;
-wire alu_c_out;
-wire branch_taken;
+    // GPIO Signals
+    wire [3:0] gpio_leds;          // Output to LEDs
+    wire [3:0] gpio_switches;      // Input from switches
+    wire [7:0] gpio_address;       // Address for GPIO
+    wire gpio_write_enable;        // Write enable for GPIO
+    wire [3:0] gpio_write_data;    // Data to write to GPIO
+    wire [3:0] gpio_read_data;     // Data read from GPIO
 
-// From decode stage
-wire reg_write;
-wire [1:0] alu_src;
-wire [3:0] alu_op;
-wire dmem_write;
-wire dmem_read;
-wire [4:0] Rs1;
-wire [4:0] Rs2;
-wire [4:0] Rd;
-wire branch_enable;
-wire [31:0] imm;
-wire [1:0] rf_select_in;
-wire [31:0] rf_in;
+    // Program Counter
+    Program_Counter pc_module(
+        .clk(clk),
+        .rst(rst),
+        .branch_addy(branch_target),
+        .branch_enable(branch_taken),
+        .PC_out(current_pc)		//Output
+    );
 
-// Program Counter instantiation
-Program_Counter pc_module(
-    .clk(clk),                         // Input
-    .rst(rst),                         // Input
-    .branch_addy(branch_target),       // Input (branch address)
-    .branch_enable(branch_taken),      // Input (branch enable)
-    .return_addr(current_pc + 32'd4),  // Link address to save in Ra
-    .PC_out(current_pc)                // Output (current PC value)
-);
+    // Instruction Memory
+    IMEM imem (
+        .address(current_pc[31:2]),
+        .clock(clk),
+        .q(inst_encoding)		//Output
+    );
 
+    // Decode Stage
+    decode decode(
+        .clk(clk),
+        .rst(rst),
+        .instruction(inst_encoding),	//Output
+        .rf_input_src(rf_select_in),	//Output
+        .alu_op(alu_op),		//Output
+        .we(reg_write),			//Output
+        .mem_write(dmem_write),		//Output
+        .mem_read(mem_read),		//Output
+        .branch_target(branch_target),	//Output
+        .imm(imm),			//Output
+        .Rs1_out(Rs1),			//Output
+        .Rs2_out(Rs2),			//Output
+        .Rd_out(Rd)			//Output
+    );
 
-// Instruction Memory instantiation
-IMEM imem (
-    .address(current_pc),
-    .clock(clk),
-    .q(inst_encoding)
-);
+    // Register File
+    reg_file rf(
+        .Rs1(Rs1),
+        .Rs2(Rs2),
+        .Rd(Rd_WB),
+        .data_in(rf_in_latch),
+        .we(XM_rf_write_enable),  
+        .read_data1(rf_out_1),
+        .read_data2(rf_out_2),
+        .clk(clk),
+        .rst(rst)
+    );
 
+    // ALU
+    ALU alu(
+        .A(rf_out_1),
+        .B(rf_out_2),
+        .imm(imm),
+ 	.func(alu_op),
+        .out(alu_out),
+        .branch_taken(branch_taken)  // Ensure this is correctly derived
+    );
 
-// Decoder instantiation
-decode decode(
-    .clk(clk),
-    .rst(rst),
-    .instruction(inst_encoding),
-    .rf_input_src(rf_select_in),
-    .alu_op(alu_op),
-    .we(reg_write),                    // Output (register file write enable)
-    .mem_read(dmem_read),
-    .mem_write(dmem_write),
-    .branch_target(branch_target),
-    .branch_enable(branch_enable),
-    .imm(imm),
-    .alu_src(alu_src),
-    .Rs1_out(Rs1),    
-    .Rs2_out(Rs2),
-    .Rd_out(Rd)
-);
+    // Execute-Memory Latch
+    XM_Latch XM(
+        .alu_out(alu_out),
+        .imm_out(imm),
+        .mem_write_data(rf_out_2),
+        .rf_write_enable(reg_write),
+        .mem_write_enable(dmem_write),
+        .mem_read_enable(mem_read),
+        .rf_mux_control(rf_select_in),
+        .rd(Rd),
+        .clk(clk),
+        .rst(rst),
+        .XM_alu_out(XM_alu_out),
+        .XM_imm_out(XM_imm_out),
+        .XM_mem_write_data(XM_mem_write_data),
+        .XM_rf_write_enable(XM_rf_write_enable),
+        .XM_mem_write_enable(XM_mem_write_enable),
+        .XM_mem_read_enable(XM_mem_read_enable),
+        .XM_rf_mux_control(XM_rf_mux_control),
+        .Rd_WB(Rd_WB)
+    );
 
-// Register File instantiation
-reg_file rf(
-    .Rs1(Rs1),                         // Input (read from Rs1)
-    .Rs2(Rs2),                         // Input (read from Rs2)
-    .Rd(Rd),                           // Input (write to Rd)
-    .data_in(rf_in),                   // Input (data to be written to RF)
-    .we(reg_write),                    // Input (write enable)
-    .read_data1(rf_out_0),             // Output (data from Rs1)
-    .read_data2(rf_out_1),             // Output (data from Rs2)
-    .clk(clk),                         // Input (clock)
-    .rst(rst)                          // Input (reset)
-);
+    // Data Memory
+    DMEM dmem(
+        .address(XM_alu_out),
+        .clock(clk),
+        .data(XM_mem_write_data),
+        .wren(XM_mem_write_enable),
+        .q(dmem_out)
+    );
 
-// ALU instantiation
-ALU alu(
-    .A(rf_out_0),                      // Input (from Rs1)
-    .B(rf_out_1),                      // Input (from Rs2)
-    .imm(imm),                         // Input (immediate value)
-    .alu_src(alu_src),                 // Input (ALU source selection)
-    .func(alu_op),                     // Input (ALU operation code)
-    .out(alu_out),                     // Output (ALU result)
-    .c_out(alu_c_out),                 // Output (carry-out flag)
-    .branch_taken(branch_taken)        // Output (branch taken flag)
-);
+    // GPIO Module Instantiation
+    gpio gpio_attempt (
+        .clk(clk),
+        .rst(rst),
+        .switches(gpio_switches), // Connect to the switches input
+        .address(XM_alu_out[7:0]), // Use the lower 8 bits of ALU output as address
+        .write_enable(XM_mem_write_enable && (XM_alu_out[7:0] == 8'h00)), // Write enable for LEDs
+        .write_data(XM_mem_write_data[3:0]), // Use lower 4 bits for LED control
+        .leds(gpio_leds), // Connect to the LED output
+        .read_data(gpio_read_data) // Read data from GPIO
+    );
 
-latch XM(
-    .d_input1(alu_out),   		// ALU_output 0-31	
-    .d_input2(imm), 			// immediate value 32-63
-    .d_input3(rf_select_in),		// rf_input mux select 64-65
-    .we(reg_write),            		// Write enable
-    .clk(clk),               		// Clock signal
-    .rst(rst),               		// Reset signal
-    .out(rf_in)        			// Output data
-);
-
-
-// Data Memory instantiation
-DMEM dmem(
-    .address(alu_out),
-    .clock(clk),
-    .data(alu_out),
-    .wren(dmem_write),
-    .q(dmem_out)
-);
-
-
-// Assigning proper value to rf_in based on memory read or ALU result
-assign rf_in = (dmem_read) ? dmem_out : rf_in;  // Memory read data if dmem_read is high, else ALU output
-
+    // Register File Mux
+    mux_4to1 rf_mux_in(
+        .in1(XM_alu_out),
+        .in2(dmem_out),
+        .in3(XM_imm_out),
+        .in4(32'b0),		//.in4(gpio_read_data), // Include GPIO read data as an option
+        .sel(XM_rf_mux_control),
+        .Y(rf_in_latch)
+    );
 
 endmodule
