@@ -1,50 +1,50 @@
-#RISC-V Processor Project
+# RISC-V Processor Project
 
-##Overview
+## Overview
 
 This repository contains the design and implementation of a simple RISC-V processor using Verilog. The project aims to build a single-cycle processor initially and then expand to a multi-cycle design with increasing pipeline stages. The final goal is to compare the performance of different pipeline depths when running on a DE10-Lite FPGA.
 
-##Objectives
+## Objectives
 
-Single-cycle Implementation: Design and implement a simple RISC-V processor with a single-cycle datapath.
+**Single-cycle Implementation:** Design and implement a simple RISC-V processor with a single-cycle datapath.
 
-Multi-cycle Expansion: Transition from a single-cycle to a multi-cycle design, starting with two stages and progressively increasing to a five-stage pipeline.
+**Multi-cycle Expansion:** Transition from a single-cycle to a multi-cycle design, starting with two stages and progressively increasing to a five-stage pipeline.
 
-Performance Analysis: Evaluate and compare the performance of the different implementations in terms of speed and resource usage.
+**Performance Analysis:** Evaluate and compare the performance of the different implementations in terms of speed and resource usage.
 
-FPGA Deployment: Test implementations on a DE10-Lite FPGA.
+**FPGA Deployment:** Test implementations on a DE10-Lite FPGA.
 
-Debugging: Learn and apply debugging techniques in both Quartus and ModelSim.
+**Debugging:** Learn and apply debugging techniques in both Quartus and ModelSim.
 
-##Implementation Plan
+## Implementation Plan
 
-Single-cycle Processor
+1. Single-cycle Processor
 
-Basic instruction fetch, decode, execute, memory, and write-back. c
+a. Basic instruction fetch, decode, execute, memory, and write-back.
 
-Simple control and ALU logic. (Completed)
+b. Simple control and ALU logic.
 
-Two-stage Pipeline. (Completed)
+2. Two-stage Pipeline
 
-Introduce an initial latch between stages. (Completed)
+a. Introduce an initial latch between stages.
 
-Handle hazards and ensure correctness. (Completed)
+b. Handle hazards and ensure correctness.
 
-Five-stage Pipeline. (In-Progress)
+3. Five-stage Pipeline
 
-Implement IF (Instruction Fetch), ID (Instruction Decode), EX (Execute), MEM (Memory Access), and WB (Write Back) stages. (In-Progress)
+a. Implement IF (Instruction Fetch), ID (Instruction Decode), EX (Execute), MEM (Memory Access), and WB (Write Back) stages.
 
-Optimize forwarding and hazard detection. (In-Progress)
+b. Optimize forwarding and hazard detection.
 
-Testing and Debugging. (In-Progress)
+4. Testing and Debugging
 
-Simulate using ModelSim.
+a. Simulate using ModelSim.
 
-Synthesize in Quartus and test on DE10-Lite FPGA.
+b. Synthesize in Quartus and test on DE10-Lite FPGA.
 
-Compare execution times and resource utilization.
+c. Compare execution times and resource utilization.
 
-##Tools Used
+## Tools Used
 
 Verilog: Hardware description language for processor design.
 
@@ -54,11 +54,17 @@ ModelSim: Simulation and debugging.
 
 DE10-Lite: FPGA board for hardware testing.
 
-##Repository Structure
+## Repository Structure
 
+src/ - Contains Verilog source files for processor design.
 
+testbench/ - Testbenches for verifying functionality.
 
-##Future Work
+docs/ - Project documentation and analysis.
+
+scripts/ - Useful scripts for simulation and synthesis.
+
+## Future Work
 
 Implement additional RISC-V instructions.
 
@@ -68,6 +74,6 @@ Optimize for lower power and higher performance.
 
 Explore superscalar or out-of-order execution.
 
-##Contact
+## Contact
 
 For any questions or contributions, feel free to open an issue or submit a pull request!
