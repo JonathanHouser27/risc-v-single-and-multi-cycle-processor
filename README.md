@@ -20,29 +20,29 @@ This repository contains the design and implementation of a simple RISC-V proces
 
 1. Single-cycle Processor
 
-  --a. Basic instruction fetch, decode, execute, memory, and write-back.
+  -- a. Basic instruction fetch, decode, execute, memory, and write-back.
 
-  --b. Simple control and ALU logic.
+  -- b. Simple control and ALU logic.
 
 2. Two-stage Pipeline
 
-  --a. Introduce an initial latch between stages.
+  -- a. Introduce an initial latch between stages.
 
-  --b. Handle hazards and ensure correctness.
+  -- b. Handle hazards and ensure correctness.
 
 3. Five-stage Pipeline
 
-  --a. Implement IF (Instruction Fetch), ID (Instruction Decode), EX (Execute), MEM (Memory Access), and WB (Write Back) stages.
+  -- a. Implement IF (Instruction Fetch), ID (Instruction Decode), EX (Execute), MEM (Memory Access), and WB (Write Back) stages.
 
-  --b. Optimize forwarding and hazard detection.
+  -- b. Optimize forwarding and hazard detection.
 
 4. Testing and Debugging
 
-  --a. Simulate using ModelSim.
+  -- a. Simulate using ModelSim.
 
-  --b. Synthesize in Quartus and test on DE10-Lite FPGA.
+  -- b. Synthesize in Quartus and test on DE10-Lite FPGA.
 
-  --c. Compare execution times and resource utilization.
+  -- c. Compare execution times and resource utilization.
 
 ## Tools Used
 
