@@ -14,6 +14,7 @@
 `define FUNCT3_AND  3'b111     // Function code for AND
 `define FUNCT3_OR   3'b110     // Function code for OR
 `define FUNCT3_SLT  3'b010     // Function code for SLT
+`define FUNCT3_XOR  3'b100     // Function code for XOR
 
 // FUNC3 for I Type Instruction (0010011)
 `define FUNCT3_ADDI  3'b000     // Function code for ADDI
@@ -24,20 +25,19 @@
 `define FUNCT3_ANDI  3'b111     // Function code for ANDI
 
 
-
 `define FUNCT3_LW    3'b010     // Function code for LW
 
 
 // Function codes for S-Type instructions
-`define FUNCT3_SW   3'b010     // Function code for SW
+`define FUNCT3_SW   3'b010      // Function code for SW
 
 // Function codes for B-Type instructions
 `define FUNCT3_BEQ  3'b000      // Function code for BEQ
-`define FUNCT3_BNE  3'b001	// Function code for BNE
-`define FUNCT3_BLT  3'b100	// Function code for BLT
+`define FUNCT3_BNE  3'b001	    // Function code for BNE
+`define FUNCT3_BLT  3'b100	    // Function code for BLT
 `define FUNCT3_BGE  3'b101      // Function code for BGE
-`define FUNCT3_BLTU 3'b110	// Function code for BLTU
-`define FUNCT3_BGEU 3'b111	// Function code for BGEU
+`define FUNCT3_BLTU 3'b110	    // Function code for BLTU
+`define FUNCT3_BGEU 3'b111	    // Function code for BGEU
 
 // ALU operation codes
 `define ALU_ADD     5'b00000    // ALU operation for ADD
@@ -55,6 +55,9 @@
 `define ALU_JUMP    5'b01100    // ALU operation for JUMP
 `define ALU_BRANCH  5'b01101    // ALU operation for BRANCH
 `define ALU_BEQ     5'b01110    // Function code for BEQ
-`define ALU_BNE     5'b01111	// Function code for BNE
-`define ALU_BLT     5'b10000	// Function code for BLT
+`define ALU_BNE     5'b01111	  // Function code for BNE
+`define ALU_BLT     5'b10000  	// Function code for BLT
 `define ALU_BGE     5'b10001    // Function code for BGE
+`define ALU_XOR	    5'b10010  	// Function code for XOR
+`define ALU_XORI    5'b10011  	// Function code for XORI
+`define ALU_ANDI    5'b10100	  // Function code for ANDI
