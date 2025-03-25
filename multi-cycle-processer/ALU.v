@@ -1,6 +1,6 @@
 `timescale 1us/100ns
 
-`include "Definition.v"
+`include "Definition_List.v"
 
 module ALU (
     input [31:0] A,                
@@ -33,26 +33,26 @@ always @(*) begin
 		out = A & B;
 		branch_taken = 1'b0;
 	end
-//	`ALU_ANDI: begin
-//		out = A & imm;
-//		branch_taken = 1'b0;
-//	end
+	`ALU_ANDI: begin
+		out = A & imm;
+		branch_taken = 1'b0;
+	end
         `ALU_OR: begin
 		out = A | B;
 		branch_taken = 1'b0;
 	end
-//        `ALU_ORI: begin
-//		out = A | imm;
-//		branch_taken = 1'b0;
-//	end
-//        `ALU_XOR: begin
-//		out = A ^ B;
-//		branch_taken = 1'b0;
-//	end
-//        `ALU_XORI: begin
-//		out = A ^ imm;
-//		branch_taken = 1'b0;
-//	end
+        `ALU_ORI: begin
+		out = A | imm;
+		branch_taken = 1'b0;
+	end
+        `ALU_XOR: begin
+		out = A ^ B;
+		branch_taken = 1'b0;
+	end
+        `ALU_XORI: begin
+		out = A ^ imm;
+		branch_taken = 1'b0;
+	end
         `ALU_LUI: begin
 		out = imm;
 		branch_taken = 1'b0;
