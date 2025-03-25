@@ -38,33 +38,27 @@ This repository contains the design and implementation of a simple RISC-V proces
 
 ## Tools Used
 
-Verilog: Hardware description language for processor design.
+**Verilog:** Hardware description language for processor design.
 
-Quartus: FPGA development and synthesis.
+**Quartus:** FPGA development and synthesis.
 
-ModelSim: Simulation and debugging.
+**ModelSim:** Simulation and debugging.
 
-DE10-Lite: FPGA board for hardware testing.
+**DE10-Lite:** FPGA board for hardware testing.
 
 ## Repository Structure
 
-src/ - Contains Verilog source files for processor design.
 
-testbench/ - Testbenches for verifying functionality.
-
-docs/ - Project documentation and analysis.
-
-scripts/ - Useful scripts for simulation and synthesis.
 
 ## Future Work
 
-Implement additional RISC-V instructions.
+1. Implement additional RISC-V instructions.
 
-Improve hazard handling and pipeline efficiency.
+2. Improve hazard handling and pipeline efficiency.
 
-Optimize for lower power and higher performance.
+3. Optimize for lower power and higher performance.
 
-Explore superscalar or out-of-order execution.
+4. Explore superscalar or out-of-order execution.
 
 ## Contact
 
