@@ -1,6 +1,6 @@
 `timescale 1us/100ns
 
-`include "Definition.v"
+`include "Definition_List.v"
 
 module decode (
     input clk,
@@ -36,6 +36,7 @@ module decode (
                         `FUNCT3_ADD: alu_op <= (funct7 == `FUNCT7_SUB) ? `ALU_SUB : `ALU_ADD;
                         `FUNCT3_AND: alu_op <= `ALU_AND;
                         `FUNCT3_OR:  alu_op <= `ALU_OR;
+			`FUNCT3_XOR: alu_op <= `ALU_XOR;
                         `FUNCT3_SLT: alu_op <= `ALU_SLT;
                         default:     alu_op <= 5'b11111; // Undefined
                     endcase
@@ -58,6 +59,8 @@ module decode (
                         `FUNCT3_ORI:  alu_op <= `ALU_ORI;
                         `FUNCT3_LW:   alu_op <= `ALU_LOAD;
                         `FUNCT3_SLTI: alu_op <= `ALU_SLTI;
+			`FUNCT3_XORI: alu_op <= `ALU_XORI;
+			`FUNCT3_ANDI: alu_op <= `ALU_ANDI;
                         default:      alu_op <= 5'b11111; // Undefined
                     endcase
                     rf_input_src <= 2'b00; 
