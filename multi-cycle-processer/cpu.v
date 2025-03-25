@@ -2,7 +2,8 @@
 
 module cpu (
     input wire clk,
-    input wire rst
+    input wire rst,
+    output wire gpio_out
 );
 
     // Signals
@@ -124,7 +125,7 @@ module cpu (
         .address(XM_alu_out),
         .clock(clk),
         .data(XM_mem_write_data),
-        .wren(XM_mem_write_enable),
+        .wren(XM_mem_write_enable & ! XM_alu_out[31]),
         .q(dmem_out)
     );
 
@@ -132,12 +133,9 @@ module cpu (
     gpio gpio_attempt (
         .clk(clk),
         .rst(rst),
-        .switches(gpio_switches), // Connect to the switches input
-        .address(XM_alu_out[7:0]), // Use the lower 8 bits of ALU output as address
-        .write_enable(XM_mem_write_enable && (XM_alu_out[7:0] == 8'h00)), // Write enable for LEDs
-        .write_data(XM_mem_write_data[3:0]), // Use lower 4 bits for LED control
-        .leds(gpio_leds), // Connect to the LED output
-        .read_data(gpio_read_data) // Read data from GPIO
+	.d_input(XM_mem_write_data),
+	.we(XM_mem_write_enable & XM_alu_out[31]),
+	.out(gpio_out)
     );
 
     // Register File Mux
