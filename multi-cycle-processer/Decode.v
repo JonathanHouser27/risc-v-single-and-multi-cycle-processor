@@ -1,6 +1,6 @@
 `timescale 1us/100ns
 
-`include "Definition_List.v"
+`include "Definitions_List.v"
 
 module decode (
     input clk,
