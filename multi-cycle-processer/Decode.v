@@ -7,7 +7,7 @@ module decode (
     input rst,
     input [31:0] instruction,
     output reg [1:0] rf_input_src,
-    output reg [4:0] alu_op,
+    output reg [1:0] alu_op,
     output reg we,
     output reg mem_write,
     output reg mem_read,
