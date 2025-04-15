@@ -34,14 +34,6 @@ module cpu (
     wire [31:0] imm;
     wire [1:0] rf_select_in;
 
-    // GPIO Signals
-    wire [3:0] gpio_leds;          // Output to LEDs
-    wire [3:0] gpio_switches;      // Input from switches
-    wire [7:0] gpio_address;       // Address for GPIO
-    wire gpio_write_enable;        // Write enable for GPIO
-    wire [3:0] gpio_write_data;    // Data to write to GPIO
-    wire [3:0] gpio_read_data;     // Data read from GPIO
-
     // Program Counter
     Program_Counter pc_module(
         .clk(clk),
